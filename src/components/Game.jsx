@@ -6,6 +6,8 @@ const Game = () => {
     const [squares, setSquares] = useState(Array(9).fill(null));
     const [isXNext, setIsXNext] = useState(true);
 
+    const winner = calculateWinner(squares);
+
     useEffect(() => {
         const body = document.querySelector('body');
         body.style.background = isXNext
@@ -14,52 +16,60 @@ const Game = () => {
     }, [isXNext]);
 
     const handleClick = (index) => {
-        if (squares[index] || calculateWinner(squares)) return;
+        if (squares[index] || winner) return;
 
         const newSquares = squares.slice();
         newSquares[index] = isXNext ? 'X' : 'O';
         setSquares(newSquares);
         setIsXNext(!isXNext);
+    };
 
-        const gameInfo = document.querySelector('.game-info');
-        switch (true) {
-            case !!winner:
-                // Handle winner styling
-                gameInfo.textContent = `Ganador: ${winner}`;
-                gameInfo.style.position = 'absolute';
-                gameInfo.style.color = winner === 'X' ? 'red' : 'blue';
-                gameInfo.style.fontSize = '2rem';
-                break;
-    
-            case newSquares.every((square) => square !== null): // Handle draw
-                gameInfo.textContent = '¡Es un empate!';
-                gameInfo.style.position = 'absolute';
-                gameInfo.style.color = 'purple';
-                gameInfo.style.fontSize = '2rem';
-                break;
-    
-            default:
-                // Handle next player's turn
-                gameInfo.textContent = `YOUR TURN`;
-                gameInfo.style.fontSize = '2.5rem';
-                gameInfo.style.position= 'absolute';
-                gameInfo.style.top= '58%';
-                gameInfo.style.left= isXNext ? '80%' : '10%';
-                break;
+    const handleReset = () => {
+        setSquares(Array(9).fill(null));
+        setIsXNext(true);
+    };
+
+    const getGameInfoStyles = () => {
+        if (winner) {
+            return {
+                color: winner === 'X' ? 'red' : 'blue',
+                left: isXNext ? '80%' : '10%',
+            };
+        } else if (squares.every((square) => square !== null)) {
+            return {
+                color: 'yellow',
+                left: isXNext ? '80%' : '10%',
+            };
+        } else {
+            return {
+                left: isXNext ? '5%' : '75%',
+                fontSize: '5rem'
+            };
         }
     };
 
-    const winner = calculateWinner(squares);
-
-    
+    const getMessage = () => {
+        if (winner) {
+            return `YOU WIN!`;
+        } else if (squares.every((square) => square !== null)) {
+            return 'DRAW!';
+        } else {
+            return `YOUR TURN`;
+        }
+    };
 
     return (
         <div className="game">
             <h1>Tic-tac-toe</h1>
             <Board squares={squares} onSquareClick={handleClick} />
-            <div className="game-info">
-                
-            </div>
+            <div className="game-info" style={getGameInfoStyles()}>
+                {getMessage()}
+            </div>  
+            {(winner || squares.every((square) => square !== null)) && (
+                <button className="reset-button" onClick={handleReset}>
+                    Play again
+                </button>
+            )}
         </div>
     );
 };
